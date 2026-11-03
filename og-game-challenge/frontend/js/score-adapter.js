@@ -2,16 +2,18 @@
 // SCORE ADAPTER — Connect games to backend
 // ═══════════════════════════════════════
 
-async function handleGameOver(gameKey, value) {
+async function handleGameOver(gameKey, value, accuracy = 0, options = {}) {
   const user = getCurrentUser();
 
   if (!user) {
-    showGameOverOverlay({
-      title: "REGISTER REQUIRED",
-      score: value,
-      message: "Create a player profile before submitting a score.",
-      gameId: null
-    });
+    if (!options.showVictoryCredits) {
+      showGameOverOverlay({
+        title: "REGISTER REQUIRED",
+        score: value,
+        message: "Create a player profile before submitting a score.",
+        gameId: null
+      });
+    }
     return;
   }
 
@@ -23,7 +25,7 @@ async function handleGameOver(gameKey, value) {
     return;
   }
 
-try {
+  try {
     const games = await getGames();
 
     const selectedGame = games.find((game) => {
@@ -36,7 +38,7 @@ try {
       return;
     }
 
-    const savedScore = await submitScore(user.id, selectedGame.id, value);
+    const savedScore = await submitScore(selectedGame.id, value);
     const bestScore = savedScore.value;
     const isNewBest = value >= bestScore;
 
@@ -47,24 +49,29 @@ try {
       bestScore: bestScore
     });
 
-    showGameOverOverlay({
-      title: "GAME OVER",
-      score: value,
-      bestScore: bestScore,
-      isNewBest: isNewBest,
-      message: isNewBest ? "NEW PERSONAL BEST" : "SCORE SAVED",
-      gameId: gameId
-    });
+    if (!options.showVictoryCredits) {
+      showGameOverOverlay({
+        title: "GAME OVER",
+        score: value,
+        bestScore: bestScore,
+        isNewBest: isNewBest,
+        message: isNewBest ? "NEW PERSONAL BEST" : "SCORE SAVED",
+        gameId: gameId
+      });
+    }
   } catch (error) {
     console.error(error);
 
-    showGameOverOverlay({
-      title: "SCORE ERROR",
-      score: value,
-      message: "Score could not be submitted.",
-      gameId: gameId
-    });
+    if (!options.showVictoryCredits) {
+      showGameOverOverlay({
+        title: "SCORE ERROR",
+        score: value,
+        message: "Score could not be submitted.",
+        gameId: gameId
+      });
+    }
   }
+}
 
 function showGameOverOverlay(data) {
   const existingOverlay = document.getElementById("gameOverOverlay");
@@ -121,4 +128,3 @@ function showGameOverOverlay(data) {
 }
 
 window.handleGameOver = handleGameOver;
-}

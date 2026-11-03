@@ -1,5 +1,7 @@
 console.log("AUDIO_MANAGER_NEW_VERSION");
 export class AudioManager {
+
+
   constructor() {
     this.sounds = {
 
@@ -12,7 +14,7 @@ export class AudioManager {
       ),
 
 			bonusPickup: new Audio(
-  			"../assets/audio/bonus_pickup.mp3"
+			"../assets/audio/bonus_pickup.mp3"
 			),
 
       backgroundMusic: new Audio(
@@ -86,7 +88,7 @@ export class AudioManager {
         "../assets/audio/shoot_sound03-3.mp3"
     );
 
-    laser.volume = 0.06;
+    laser.volume = 0.05;
 
 
 
@@ -99,11 +101,11 @@ export class AudioManager {
     this.sounds.boss2Music.loop = true;
     this.sounds.boss3Music.loop = true;
     this.sounds.backgroundMusic.volume = 0.15;
-    this.sounds.boss1Music.volume = 0.35;
+    this.sounds.boss1Music.volume = 0.29;
     this.sounds.boss2Music.volume = 0.29;
-    this.sounds.boss3Music.volume = 0.35;
+    this.sounds.boss3Music.volume = 0.29;
 		this.sounds.bonusPickup.volume = 0.40;
-    this.sounds.enemyDestroy.volume = 0.5;
+    this.sounds.enemyDestroy.volume = 0.45;
     this.sounds.playerDestroy.volume = 0.11;
     this.sounds.bossEyeShoot.volume = 0.35;
     this.sounds.bossDestroy.volume = 0.65;
@@ -114,8 +116,8 @@ export class AudioManager {
 
     this.sounds.laserCharge.volume = 0.40;
     this.sounds.laserLoop.volume = 0.18;
-    this.sounds.phase3_1.volume = 0.50;
-    this.sounds.phase3_2.volume = 0.40;
+    this.sounds.phase3_1.volume = 0.45;
+    this.sounds.phase3_2.volume = 0.35;
     this.sounds.dragonLaser.volume = 0.35;
 
     // 5 lecteurs du meme son
@@ -229,6 +231,68 @@ export class AudioManager {
     music.currentTime = 0;
   }
 
+  resetMusicForNewGame() {
+    if (this.musicFades) {
+      for (const fadeId of Object.values(this.musicFades)) {
+        clearInterval(fadeId);
+      }
+
+      this.musicFades = {};
+    }
+
+    const tracksToStop = [
+      "backgroundMusic",
+      "boss1Music",
+      "boss2Music",
+      "boss3Music",
+      "laserLoop",
+      "phase3_1",
+      "phase3_2"
+    ];
+
+    for (const trackName of tracksToStop) {
+      this.stopMusic(trackName);
+    }
+
+    this.sounds.backgroundMusic.volume = 0.15;
+    this.sounds.boss1Music.volume = 0.29;
+    this.sounds.boss2Music.volume = 0.29;
+    this.sounds.boss3Music.volume = 0.29;
+    this.sounds.laserLoop.volume = 0.18;
+  }
+
+  fadeMusic(name, targetVolume, duration = 1500, pauseAtEnd = false) {
+    const music = this.sounds[name];
+    if (!music) return;
+
+    // Annule un éventuel fondu précédent sur cette piste
+    this.musicFades ??= {};
+    if (this.musicFades[name]) {
+      clearInterval(this.musicFades[name]);
+    }
+
+    const startVolume = music.volume;
+    const startTime = performance.now();
+
+    this.musicFades[name] = setInterval(() => {
+      const progress = Math.min(
+        (performance.now() - startTime) / duration,
+        1
+      );
+
+      music.volume =
+        startVolume + (targetVolume - startVolume) * progress;
+
+      if (progress >= 1) {
+        clearInterval(this.musicFades[name]);
+        delete this.musicFades[name];
+
+        if (pauseAtEnd) {
+          music.pause();
+        }
+      }
+    }, 16);
+  }
   playDragonPhaseThree() {
     this.playSound("phase3_1");
 
@@ -274,7 +338,7 @@ export class AudioManager {
     const gain = this.bossHitContext.createGain();
 
     source.buffer = this.bossHitBuffer;
-    gain.gain.value = 0.12;
+    gain.gain.value = 0.15;
 
     source.connect(gain);
     gain.connect(this.bossHitContext.destination);
@@ -285,4 +349,6 @@ export class AudioManager {
 
     source.start();
   }
+
+
 }

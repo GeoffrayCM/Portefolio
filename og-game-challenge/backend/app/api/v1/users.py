@@ -1,45 +1,24 @@
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services import facade
 
 
 api = Namespace(
     "users",
-    description="Users operations"
+    description="Authenticated user operations"
 )
-
-user_model = api.model("User", {
-    "email": fields.String(required=True, description="User email"),
-    "username": fields.String(required=True, description="User username")
-})
-
-
-@api.route("/")
-class UserList(Resource):
-    """Users list resource."""
-
-    @api.expect(user_model)
-    def post(self):
-        """Create or retrieve a user."""
-        data = api.payload
-
-        try:
-            user = facade.create_user(
-                data.get("email"),
-                data.get("username")
-            )
-        except (TypeError, ValueError) as error:
-            return {"error": str(error)}, 400
-
-        return user.to_dict(), 201
-
 
 @api.route("/<string:user_id>")
 class UserResource(Resource):
     """Single user resource."""
 
+    @jwt_required()
     def get(self, user_id):
-        """Return a user by id."""
+        """Return the authenticated user's profile."""
+        if get_jwt_identity() != user_id:
+            return {"error": "access forbidden"}, 403
+
         user = facade.get_user(user_id)
 
         if not user:

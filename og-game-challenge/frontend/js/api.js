@@ -71,11 +71,10 @@ async function getGame(gameId) {
 }
 
 // SCORES
-async function submitScore(userId, gameId, value) {
+async function submitScore(gameId, value) {
   return await apiRequest("/scores/", {
     method: "POST",
     body: JSON.stringify({
-      user_id: userId,
       game_id: gameId,
       value
     })

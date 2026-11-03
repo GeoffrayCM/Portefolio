@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.services import facade
 
@@ -9,7 +10,6 @@ api = Namespace(
 )
 
 score_model = api.model("Score", {
-    "user_id": fields.String(required=True, description="User id"),
     "game_id": fields.String(required=True, description="Game id"),
     "value": fields.Integer(required=True, description="Score value")
 })
@@ -20,13 +20,14 @@ class ScoreList(Resource):
     """Scores list resource."""
 
     @api.expect(score_model)
+    @jwt_required()
     def post(self):
-        """Submit a new score."""
+        """Submit a score for the authenticated user."""
         data = api.payload
 
         try:
             score = facade.submit_score(
-                data.get("user_id"),
+                get_jwt_identity(),
                 data.get("game_id"),
                 data.get("value")
             )

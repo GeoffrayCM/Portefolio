@@ -10,7 +10,7 @@ export function setupInput() {
   document.addEventListener("keydown", function (event) {
     const key = event.key.toLowerCase();
 
-    if (event.key === "ArrowLeft" || key === "q") {
+    if (event.key === "ArrowLeft" || key === "q" || key === "a") {
       keys.left = true;
     }
 
@@ -18,7 +18,7 @@ export function setupInput() {
       keys.right = true;
     }
 
-    if (event.key === "ArrowUp" || key === "z") {
+    if (event.key === "ArrowUp" || key === "z" || key === "w") {
       keys.up = true;
     }
 
@@ -35,7 +35,7 @@ export function setupInput() {
   document.addEventListener("keyup", function (event) {
     const key = event.key.toLowerCase();
 
-    if (event.key === "ArrowLeft" || key === "q") {
+    if (event.key === "ArrowLeft" || key === "q" || key === "a") {
       keys.left = false;
     }
 
@@ -43,7 +43,7 @@ export function setupInput() {
       keys.right = false;
     }
 
-    if (event.key === "ArrowUp" || key === "z") {
+    if (event.key === "ArrowUp" || key === "z" || key === "w") {
       keys.up = false;
     }
 
@@ -57,5 +57,3 @@ export function setupInput() {
     }
   });
 }
-
-setupInput();

@@ -1,5 +1,48 @@
 # OG Game Challenge - Backend
 
+## Local configuration
+
+The Flask and JWT secrets are read from `backend/.env` and are never stored in
+the source code.
+
+1. Create the local configuration:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Generate two different secrets:
+
+   ```bash
+   python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+
+   Run the command twice and place the two results in `SECRET_KEY` and
+   `JWT_SECRET_KEY` inside `.env`.
+
+3. Install and start the API:
+
+   ```bash
+   python3 -m pip install -r requirements.txt
+   python3 run.py
+   ```
+
+The optional `DATABASE_URL` keeps SQLite by default. The `.env` file is ignored
+by Git, while `.env.example` documents the variable names without exposing real
+secrets.
+
+## Automated tests
+
+Run the complete API test suite from this directory:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Each test uses a temporary SQLite database. The suite covers authentication,
+JWT authorization, games, user profiles, scores, leaderboards, and personal
+best scores.
+
 ## Overview
 
 OG Game Challenge is a web application that allows players to compete in simple browser-based mini-games and compare their performance through online leaderboards.
@@ -320,25 +363,12 @@ GET /api/v1/games/<game_id>
 
 ### Users
 
-Create or retrieve a user:
-
-```http
-POST /api/v1/users/
-```
-
-Example:
-
-```json
-{
-  "email": "player@example.com",
-  "username": "PlayerOne"
-}
-```
-
-Get a user:
+Registration is handled only by `POST /api/v1/auth/register`. An authenticated
+user can retrieve their own profile:
 
 ```http
 GET /api/v1/users/<user_id>
+Authorization: Bearer <access_token>
 ```
 
 ---
@@ -349,17 +379,20 @@ Submit a score:
 
 ```http
 POST /api/v1/scores/
+Authorization: Bearer <access_token>
 ```
 
 Example:
 
 ```json
 {
-  "user_id": "USER_ID",
   "game_id": "GAME_ID",
   "value": 1500
 }
 ```
+
+The API obtains the player identity from the JWT. It never trusts a `user_id`
+provided by the browser.
 
 Get a leaderboard:
 
@@ -393,8 +426,6 @@ Example:
 
 Potential future enhancements include:
 
-* JWT authentication
-* Password hashing with Bcrypt
 * Google OAuth integration
 * User profiles and statistics
 * Global rankings
@@ -419,4 +450,4 @@ Current status:
 * Leaderboard system implemented
 * Automatic database initialization implemented
 
-The backend is now ready to be connected to the frontend application and JavaScript mini-games.
+The backend is connected to the frontend and JavaScript mini-games.

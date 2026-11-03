@@ -15,7 +15,7 @@ class SQLAlchemyRepository:
 
     def get(self, obj_id):
         """Get an object by id."""
-        return self.model.query.get(obj_id)
+        return db.session.get(self.model, obj_id)
 
     def get_all(self):
         """Get all objects."""

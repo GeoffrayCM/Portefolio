@@ -15,6 +15,7 @@ import { FinalBossBackground } from "./finalBossBackground.js";
 import { DragonFireball } from "./dragonFireballs.js";
 import { DragonBeam } from "./dragonBeams.js";
 import { DragonLaser } from "./dragonLasers.js";
+import { DragonMirror } from "./dragonMirror.js";
 import { VictoryPortal } from "./victoryPortal.js";
 import { BossDeathSequence } from "./bossDeathSequence.js";
 import { AudioManager } from "./audioManager.js";
@@ -41,6 +42,9 @@ export class Game {
     this.intro = new Intro(this.canvas, this.background);
     this.introActive = false;
     this.lastFrameTime = null;
+    this.simulationStep = 1000 / 120;
+    this.simulationAccumulator = 0;
+    this.maxSimulationSteps = 8;
 
     this.finalBossBackground = new FinalBossBackground();
     this.lastDragonPhase = 1;
@@ -58,8 +62,11 @@ export class Game {
     this.dragonFireballs = [];
     this.dragonLasers = [];
     this.dragonLaserTimer = 100;
+    this.dragonMirror = null;
 
     this.score = 0;
+    this.shotsFired = 0;
+    this.shotsHit = 0;
     this.level = 1;
     this.frameCount = 0;
 
@@ -137,13 +144,15 @@ export class Game {
 ═══════════════════════════════════════════════════════*/
   start() {
     this.score = 0;
+    this.shotsFired = 0;
+    this.shotsHit = 0;
    // this.level = 1;
    // this.frameCount = 0;
    //DEV MODE
 this.level = DEV_MODE ? DEV_START_LEVEL : 1;
 
 this.frameCount = DEV_MODE
-  ? (DEV_START_LEVEL - 1) * 1200
+  ? (DEV_START_LEVEL - 1) * 1350
   : 0;
    //DEV MODE
 
@@ -167,6 +176,7 @@ this.frameCount = DEV_MODE
     this.dragonFireballs = [];
     this.dragonLasers = [];
     this.dragonLaserTimer = 100; 
+    this.dragonMirror = null;
 
     this.shootCooldown = 0;
     this.enemySpawnTimer = 0;
@@ -200,6 +210,10 @@ this.frameCount = DEV_MODE
     // introduction désactivée en DEVMOD.
     this.introActive = !DEV_MODE;
 
+    // Retry can happen after a boss fade left the main track at volume 0.
+    // Reset every music track before starting a fresh run.
+    this.audio.resetMusicForNewGame();
+
     if (this.introActive) {
       this.intro.start();
       this.audio.playMusic("backgroundMusic");
@@ -213,6 +227,9 @@ this.frameCount = DEV_MODE
     this.victoryPortal = null;
     this.playerVictoryScale = 1;
     this.victoryFinished = false;
+    this.victoryTitleVisible = false;
+    this.victoryTitleProgress = 0;
+    this.victoryTitleTimer = 0;
 
     // pause
     this.paused = false;
@@ -221,6 +238,7 @@ this.frameCount = DEV_MODE
     cancelAnimationFrame(this.animationId);
 
     this.lastFrameTime = null;
+    this.simulationAccumulator = 0;
     this.shootSoundCooldown = 0;
 
     if (!this.introActive) {
@@ -384,6 +402,15 @@ this.frameCount = DEV_MODE
       this.currentBossLevel === 15
     ) {
       this.finalBossBackground.draw(this.ctx);
+    }
+
+    if (
+      this.dragonMirror &&
+      this.bossActive &&
+      this.currentBossLevel === 15 &&
+      this.boss?.phase === 3
+    ) {
+      this.dragonMirror.draw(this.ctx);
     }
 
     for (const bullet of this.bullets) {
@@ -647,13 +674,30 @@ this.frameCount = DEV_MODE
     this.lastFrameTime = now;
 
     if (this.introActive) {
+      this.simulationAccumulator = 0;
       this.intro.update(deltaTime);
 
       if (this.intro.finished) {
         this.finishIntro();
       }
     } else {
-      this.update();
+      this.simulationAccumulator += deltaTime;
+
+      let simulationSteps = 0;
+
+      while (
+        this.simulationAccumulator >= this.simulationStep &&
+        simulationSteps < this.maxSimulationSteps
+      ) {
+        this.update();
+        this.simulationAccumulator -= this.simulationStep;
+        simulationSteps++;
+      }
+
+      // Drop an excessive backlog instead of entering a catch-up spiral.
+      if (simulationSteps === this.maxSimulationSteps) {
+        this.simulationAccumulator = 0;
+      }
     }
 
     this.draw();
@@ -770,12 +814,35 @@ this.frameCount = DEV_MODE
   }
 
   winGame() {
-    this.isRunning = false;
+    // Keep the final star field alive until the player starts a new game
+    // or leaves the page.
+    this.isRunning = true;
     this.gameOver = true;
 
     this.messageElement.textContent =
       `Victory — Final Score: ${this.score}`;
-    window.handleGameOver("space-runner", this.score);
+    window.handleGameOver(
+      "space-runner",
+      this.score,
+      this.getAccuracy()
+    );
+  }
+
+  getAccuracy() {
+    if (this.shotsFired === 0) {
+      return 0;
+    }
+
+    return Math.round((this.shotsHit / this.shotsFired) * 100);
+  }
+
+  registerBulletHit(bullet) {
+    if (bullet.hitCounted) {
+      return;
+    }
+
+    bullet.hitCounted = true;
+    this.shotsHit++;
   }
   endGame() {
     if (this.gameOver || this.playerDeathActive) {
@@ -838,6 +905,8 @@ this.frameCount = DEV_MODE
   }
 
   damagePlayer() {
+
+    if (DEV_MODE) return;
     if (this.damageCooldown > 0) {
       return;
     }
@@ -925,7 +994,7 @@ this.frameCount = DEV_MODE
       this.scoreElement.textContent = this.score;
     }
 
-    this.level = Math.floor(this.frameCount / 1200) + 1;
+    this.level = Math.floor(this.frameCount / 1350) + 1;
     // Safe keep for dev mode last boss
     if (this.level >= 15) {
       this.level = 15;
@@ -937,7 +1006,7 @@ this.frameCount = DEV_MODE
 
     if (this.isBossLevel(nextBossLevel)) {
       const bossFrame =
-        (nextBossLevel - 1) * 1200;
+        (nextBossLevel - 1) * 1350;
 
       const transitionAdvance = 120;
 
@@ -1057,7 +1126,7 @@ this.frameCount = DEV_MODE
     if (this.level <= 14) {
       if (roll < 0.40) {
         this.enemies.push(new Enemy(this.level));
-      } else if (roll < 0.45) {
+      } else if (roll < 0.55) {
         this.enemies.push(new SideEnemy(this.level));
       } else {
         this.steelEyeEnemies.push(
@@ -1109,6 +1178,8 @@ this.frameCount = DEV_MODE
         new Bullet(this.player.x + 18, this.player.y + 12, this.weaponLevel)
       );
     }
+
+    this.shotsFired += this.weaponLevel === 1 ? 1 : this.weaponLevel === 2 ? 2 : 3;
 
     if (this.shootSoundCooldown === 0) {
       this.audio.playShoot();
@@ -1232,7 +1303,7 @@ this.frameCount = DEV_MODE
                       BONUSES
 ═══════════════════════════════════════════════════════*/
   tryDropBonus(enemy) {
-    if (Math.random() < 0.020) {
+    if (Math.random() < 0.03) {
       this.bonuses.push(
         new Bonus(
           enemy.x + enemy.width / 2,
@@ -1288,23 +1359,25 @@ this.frameCount = DEV_MODE
     this.bossActive = true;
     this.currentBossLevel = level;
 
-    this.audio.pauseMusic("backgroundMusic");
+    const bossMusicName =
+      level === 5
+        ? "boss1Music"
+        : level === 10
+          ? "boss2Music"
+          : "boss3Music";
 
-    if (level === 5) {
-      this.audio.playMusic("boss1Music");
-    }
-    if (level === 10) {
-      this.audio.playMusic("boss2Music");
-    }
-    if (level === 15) {
-      this.audio.playMusic("boss3Music");
-    }
+    // Fondu croisé entre la musique principale et celle du boss.
+    this.audio.fadeMusic("backgroundMusic", 0, 1500, true);
+    this.audio.sounds[bossMusicName].volume = 0;
+    this.audio.playMusic(bossMusicName);
+    this.audio.fadeMusic(bossMusicName, 0.29, 1500);
 
     this.bossProjectiles = [];
     this.dragonBeams = [];
     this.dragonBeamAngle = 0;
     this.dragonLasers = [];
     this.dragonLaserTimer = 100;
+    this.dragonMirror = null;
 
     this.showBonusMessage(`BOSS ${level / 5} APPROACHING`);
   }
@@ -1387,6 +1460,7 @@ this.frameCount = DEV_MODE
     this.dragonFireballs = [];
     this.dragonBeams = [];
     this.dragonLasers = [];
+    this.dragonMirror = null;
   }
  finishBossFight() {
     const defeatedLevel = this.currentBossLevel;
@@ -1423,12 +1497,31 @@ this.frameCount = DEV_MODE
     
 
   
-    // fin de musique boss
-    this.audio.stopMusic("boss1Music");
-    this.audio.stopMusic("boss2Music");
-    this.audio.stopMusic("boss3Music");
-    // reprise music normal
-    this.audio.playMusic("backgroundMusic");
+    const defeatedBossMusic =
+      defeatedLevel === 5
+        ? "boss1Music"
+        : defeatedLevel === 10
+          ? "boss2Music"
+          : "boss3Music";
+
+    // Fondu sortant du boss pendant la reprise de la musique principale.
+    this.audio.fadeMusic(defeatedBossMusic, 0, 2000, true);
+
+    setTimeout(() => {
+      const music = this.audio.sounds[defeatedBossMusic];
+
+      if (music && music.paused) {
+        music.currentTime = 0;
+        music.volume = 0.29;
+      }
+    }, 2050);
+
+    // Reprise progressive de la musique de fond
+    if (defeatedLevel !== 15) {
+      this.audio.sounds.backgroundMusic.volume = 0;
+      this.audio.playMusic("backgroundMusic");
+      this.audio.fadeMusic("backgroundMusic", 0.15, 2000);
+    }
 
     if (defeatedLevel === 15) {
       this.startVictorySequence();
@@ -1436,7 +1529,7 @@ this.frameCount = DEV_MODE
     }
 
     this.level = defeatedLevel + 1;
-    this.frameCount = defeatedLevel * 1200;
+    this.frameCount = defeatedLevel * 1350;
     this.levelElement.textContent = this.level;
   }
 
@@ -1487,6 +1580,7 @@ this.frameCount = DEV_MODE
     for (const bullet of this.bullets) {
       if (isColliding(bullet, this.boss)) {
         bullet.active = false;
+        this.registerBulletHit(bullet);
         this.audio.playBossHit();
         this.boss.takeDamage();
         this.explosions.push({
@@ -1543,6 +1637,7 @@ this.frameCount = DEV_MODE
 
         if (isColliding(bullet, segmentHitbox)) {
           bullet.active = false;
+          this.registerBulletHit(bullet);
           this.audio.playBossHit();
           this.boss.takeDamage();
           
@@ -1710,18 +1805,42 @@ this.frameCount = DEV_MODE
       return;
     }
 
-    const distanceFromTarget =
-      Math.hypot(
-        this.boss.centerTargetX - this.boss.x,
-        this.boss.centerTargetY - this.boss.y
-      );
-
-    if (distanceFromTarget > 4) {
-      return;
+    if (!this.dragonMirror) {
+      this.dragonMirror = new DragonMirror();
     }
+
+    this.dragonMirror.update();
+    this.reflectBulletsWithDragonMirror();
 
     this.updateDragonPhaseThreeFireballs();
     this.updateDragonPhaseThreeLasers();
+  }
+
+  reflectBulletsWithDragonMirror() {
+    if (!this.dragonMirror || !this.boss) {
+      return;
+    }
+
+    const dragonHitbox = this.getDragonHitbox();
+    const targetX = dragonHitbox.x + dragonHitbox.width / 2;
+    const targetY = dragonHitbox.y + dragonHitbox.height / 2;
+
+    for (const bullet of this.bullets) {
+      if (this.dragonMirror.containsBullet(bullet)) {
+        this.dragonMirror.reflectBullet(
+          bullet,
+          targetX,
+          targetY
+        );
+
+        this.explosions.push({
+          x: bullet.x,
+          y: bullet.y,
+          radius: 2,
+          life: 7
+        });
+      }
+    }
   }
   updateDragonPhaseThreeFireballs() {
     if (this.boss.attackTimer > 0) {
@@ -1775,6 +1894,7 @@ this.frameCount = DEV_MODE
         )
       ) {
         bullet.active = false; 
+        this.registerBulletHit(bullet);
         this.audio.playBossHit();
         this.boss.takeDamage();
        
@@ -1901,6 +2021,7 @@ this.frameCount = DEV_MODE
       for (const enemy of this.enemies) {
         if (isColliding(bullet, enemy)) {
           bullet.active = false;
+          this.registerBulletHit(bullet);
           enemy.active = false;
 
           this.audio.playSound("enemyDestroy");
@@ -1929,6 +2050,7 @@ this.frameCount = DEV_MODE
       for (const meteor of this.meteors) {
         if (isColliding(bullet, meteor)) {
           bullet.active = false;
+          this.registerBulletHit(bullet);
           meteor.takeDamage();
 
           if (!meteor.active) {
@@ -2031,6 +2153,7 @@ this.frameCount = DEV_MODE
       for (const enemy of this.steelEyeEnemies) {
         if (isColliding(bullet, enemy)) {
           bullet.active = false;
+          this.registerBulletHit(bullet);
           enemy.takeDamage();
 
           this.explosions.push({
