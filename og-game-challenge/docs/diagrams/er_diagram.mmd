@@ -1,30 +1,29 @@
 erDiagram
-    USER ||--|| PLAYER_PROFILE : has
-    PLAYER_PROFILE ||--o{ SCORE : earns
-    GAME ||--o{ SCORE : contains
+    USERS ||--o{ SCORES : "users.id = scores.user_id"
+    GAMES ||--o{ SCORES : "games.id = scores.game_id"
 
-    USER {
-        int id PK
-        string email UK
-        datetime created_at
+    USERS {
+        VARCHAR_36 id PK
+        VARCHAR_120 email UK
+        VARCHAR_80 username UK
+        VARCHAR_128 password_hash
+        DATETIME created_at
+        DATETIME updated_at
     }
 
-    PLAYER_PROFILE {
-        int id PK
-        int user_id FK
-        string username UK
+    GAMES {
+        VARCHAR_36 id PK
+        VARCHAR_100 name
+        TEXT description
+        DATETIME created_at
+        DATETIME updated_at
     }
 
-    GAME {
-        int id PK
-        string name
-        string description
-    }
-
-    SCORE {
-        int id PK
-        int player_id FK
-        int game_id FK
-        int value
-        datetime created_at
+    SCORES {
+        VARCHAR_36 id PK
+        INTEGER value
+        VARCHAR_36 user_id FK
+        VARCHAR_36 game_id FK
+        DATETIME created_at
+        DATETIME updated_at
     }

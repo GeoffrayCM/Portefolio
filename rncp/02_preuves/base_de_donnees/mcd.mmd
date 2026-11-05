@@ -1,0 +1,23 @@
+erDiagram
+    UTILISATEUR ||--o{ SCORE : "obtient"
+    JEU ||--o{ SCORE : "concerne"
+
+    UTILISATEUR {
+        identifiant id
+        texte email
+        texte nom_utilisateur
+        texte empreinte_mot_de_passe
+    }
+
+    JEU {
+        identifiant id
+        texte nom
+        texte description
+    }
+
+    SCORE {
+        identifiant id
+        entier valeur
+        date date_creation
+        date date_modification
+    }

@@ -1,0 +1,17 @@
+flowchart LR
+    A[Accueil] --> B{Compte existant ?}
+    B -- Non --> C[Inscription]
+    B -- Oui --> D[Connexion]
+    C --> D
+    D --> E[Catalogue des jeux]
+    E --> F[Choix d'un jeu]
+    F --> G[Partie]
+    G --> H[Enregistrement du score]
+    H --> I[Classement du jeu]
+    E --> I
+    I --> E
+
+    classDef page fill:#f5f0ff,stroke:#6d36b3,stroke-width:2px,color:#24242d;
+    classDef action fill:#fff6df,stroke:#bc7a00,stroke-width:2px,color:#24242d;
+    class A,C,D,E,G,I page;
+    class B,F,H action;

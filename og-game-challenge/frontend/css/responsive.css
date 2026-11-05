@@ -1,0 +1,224 @@
+/* Shared responsive overrides loaded after each page-specific stylesheet. */
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 800px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 16px 20px;
+    padding: 16px 20px;
+  }
+
+  .navbar__links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: clamp(14px, 5vw, 28px);
+  }
+
+  .navbar__auth {
+    margin-left: auto;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 64px 20px;
+  }
+
+  .hero__og {
+    font-size: clamp(52px, 18vw, 82px);
+    letter-spacing: clamp(10px, 4vw, 20px);
+    text-indent: clamp(10px, 4vw, 20px);
+  }
+
+  .hero__game {
+    font-size: clamp(58px, 19vw, 92px);
+    letter-spacing: clamp(6px, 3vw, 14px);
+    text-indent: clamp(6px, 3vw, 14px);
+  }
+
+  .hero__challenge {
+    font-size: clamp(18px, 6vw, 28px);
+    letter-spacing: clamp(7px, 3vw, 16px);
+    text-indent: clamp(7px, 3vw, 16px);
+  }
+
+  .hero__tagline {
+    gap: 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  .hero__tagline-line {
+    width: 24px;
+  }
+
+  .btn-register {
+    width: min(100%, 340px);
+    justify-content: center;
+    padding: 18px 24px;
+    font-size: 18px;
+  }
+
+  .games,
+  .leaderboard {
+    padding: 40px 16px;
+  }
+
+  .games__header,
+  .leaderboard__header {
+    margin-bottom: 32px;
+  }
+
+  .games__title,
+  .leaderboard__title {
+    font-size: clamp(28px, 9vw, 40px);
+    letter-spacing: clamp(3px, 2vw, 7px);
+  }
+
+  .games__sub,
+  .leaderboard__sub {
+    line-height: 1.8;
+    letter-spacing: 2px;
+  }
+
+  .games__grid {
+    gap: 24px;
+  }
+
+  .game-card,
+  .game-over-card {
+    width: min(100%, 420px);
+  }
+
+  .game-card__body,
+  .game-over-card {
+    padding: 24px 20px;
+  }
+
+  .game-card__actions,
+  .game-actions,
+  .game-over-actions,
+  .leaderboard__tabs {
+    flex-wrap: wrap;
+  }
+
+  .game-layout,
+  .canvas-wrap {
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .register {
+    min-height: auto;
+    padding: 40px 16px;
+  }
+
+  .register__card {
+    padding: 36px 24px;
+  }
+
+  .register__title {
+    font-size: clamp(28px, 9vw, 36px);
+    letter-spacing: 4px;
+  }
+
+  .leaderboard__tabs {
+    gap: 10px;
+  }
+
+  .tab {
+    flex: 1 1 180px;
+    padding: 11px 16px;
+  }
+
+  .leaderboard__row,
+  .leaderboard__you {
+    grid-template-columns: 56px minmax(0, 1fr) 80px;
+    padding: 14px 12px;
+  }
+
+  .leaderboard__row--head {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .col-player,
+  .col-score,
+  .col-rank {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    justify-content: center;
+  }
+
+  .navbar__logo {
+    margin-right: auto;
+  }
+
+  .navbar__auth {
+    width: auto;
+    gap: 8px;
+  }
+
+  .navbar__login,
+  .navbar__user {
+    padding: 8px 10px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .navbar__links {
+    gap: 12px;
+  }
+
+  .navbar__link {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .hero__tagline-line,
+  .hud-corner {
+    display: none;
+  }
+
+  .hero__tagline,
+  .hero__cta-sub {
+    line-height: 1.8;
+  }
+
+  .game-card__actions,
+  .game-actions,
+  .game-over-actions {
+    flex-direction: column;
+  }
+
+  .game-card__btn {
+    width: 100%;
+  }
+
+  .leaderboard__row,
+  .leaderboard__you {
+    grid-template-columns: 42px minmax(0, 1fr) 64px;
+    padding-inline: 8px;
+  }
+
+  .col-player,
+  .col-score,
+  .col-rank {
+    font-size: 12px;
+  }
+}

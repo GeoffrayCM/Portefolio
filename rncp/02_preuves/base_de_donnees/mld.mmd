@@ -1,0 +1,29 @@
+erDiagram
+    USERS ||--o{ SCORES : "users.id = scores.user_id"
+    GAMES ||--o{ SCORES : "games.id = scores.game_id"
+
+    USERS {
+        VARCHAR_36 id PK
+        VARCHAR_120 email UK
+        VARCHAR_80 username UK
+        VARCHAR_128 password_hash
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    GAMES {
+        VARCHAR_36 id PK
+        VARCHAR_100 name
+        TEXT description
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    SCORES {
+        VARCHAR_36 id PK
+        INTEGER value
+        VARCHAR_36 user_id FK
+        VARCHAR_36 game_id FK
+        DATETIME created_at
+        DATETIME updated_at
+    }

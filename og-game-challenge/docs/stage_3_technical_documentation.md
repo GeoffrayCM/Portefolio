@@ -69,38 +69,34 @@ Mini-games run in the browser JavaScript and send the score to the backend when 
 
 #### User
 
-* id integer, primary key
+* id UUID string, primary key
 * email string, unique
-* created_at datetime
-
-#### PlayerProfile
-
-* id integer, primary key
-* user_id foreign key
 * username string, unique
+* password_hash string
+* created_at and updated_at datetimes
 
 #### Game
 
-* id integer, primary key
+* id UUID string, primary key
 * name string
 * description string
+* created_at and updated_at datetimes
 
 #### Score
 
-* id integer, primary key
-* player_id foreign key
+* id UUID string, primary key
+* user_id foreign key
 * game_id foreign key
 * value integer
-* created_at datetime
+* created_at and updated_at datetimes
 
 ---
 
 ### Relationships
 
-* One User has one PlayerProfile
-* One PlayerProfile can have many Scores
+* One User can have many Scores
 * One Game can have many Scores
-* Each Score belongs to one Game and one PlayerProfile
+* Each Score belongs to one User and one Game
 
 ---
 

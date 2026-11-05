@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://127.0.0.1:5001/api/v1";
+const API_BASE_URL =
+  `${window.location.protocol}//${window.location.hostname}:5001/api/v1`;
 
 function getToken() {
   return localStorage.getItem("og_token");

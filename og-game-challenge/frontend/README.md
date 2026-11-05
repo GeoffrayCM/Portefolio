@@ -25,6 +25,7 @@ frontend/
 │
 ├── css/
 │   ├── global.css                 # Reset + CSS variables (colors, fonts)
+│   ├── responsive.css             # Shared phone and tablet overrides
 │   ├── index.css                  # Landing page
 │   ├── register.css               # Register page
 │   ├── games.css                  # Game selection page
@@ -79,21 +80,24 @@ When a game ends, the score is automatically submitted to the backend.
 The frontend is organized around a few shared modules so that pages stay simple.
 
 ### `api.js` — backend communication
-Central place for every backend call. Base URL:
+Central place for every backend call. The API host follows the hostname used
+to open the frontend:
 
 ```js
-const API_BASE_URL = "http://127.0.0.1:5001/api/v1";
+const API_BASE_URL =
+  `${window.location.protocol}//${window.location.hostname}:5001/api/v1`;
 ```
 
 Exposed functions:
 
 | Function | Method | Endpoint |
 |---|---|---|
-| `createUser(username, email)` | POST | `/users/` |
+| `register(username, email, password)` | POST | `/auth/register` |
+| `login(username, password)` | POST | `/auth/login` |
 | `getUser(userId)` | GET | `/users/{id}` |
 | `getGames()` | GET | `/games/` |
 | `getGame(gameId)` | GET | `/games/{id}` |
-| `submitScore(userId, gameId, value)` | POST | `/scores/` |
+| `submitScore(gameId, value)` | POST | `/scores/` |
 | `getLeaderboard(gameId)` | GET | `/scores/game/{id}/leaderboard` |
 
 All requests go through a single `apiRequest()` helper that handles JSON encoding and error messages.
@@ -123,14 +127,45 @@ The frontend is static and has no build step. Use a local server (recommended) s
 1. Open the project in VS Code
 2. Right-click `html/index.html` → **Open with Live Server**
 
-### Option 2 — Python simple server
+### Option 2 — Python simple server on the computer
 ```bash
 cd frontend
 python3 -m http.server 8000
 ```
 Then open `http://localhost:8000/html/index.html`.
 
-> **Note:** the backend must be running on `http://127.0.0.1:5001` for registration, scores, and leaderboards to work. See `../backend/README.md`.
+The backend must also be running with `python3 run.py` from the `backend`
+directory.
+
+### Open the local project on a phone
+
+The phone and computer must use the same Wi-Fi network.
+
+```bash
+# Terminal 1
+cd backend
+python3 run.py
+
+# Terminal 2
+cd frontend
+python3 -m http.server 8000 --bind 0.0.0.0
+```
+
+Find the computer's local address on macOS:
+
+```bash
+ipconfig getifaddr en0
+```
+
+Then open `http://COMPUTER_IP:8000/html/index.html` on the phone. For example:
+`http://192.168.1.55:8000/html/index.html`.
+
+The browser automatically contacts the API on the same computer at port 5001.
+If macOS displays a firewall prompt, allow incoming connections for Python on
+the private network.
+
+The site navigation, forms, cards and leaderboards are responsive. The games
+remain keyboard-first: resizing a canvas does not add touch controls.
 
 ---
 

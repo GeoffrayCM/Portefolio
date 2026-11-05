@@ -1,6 +1,6 @@
 # Matrice des compétences DWWM
 
-Document de pilotage interne - version initiale vérifiée le 3 novembre 2026.
+Document de pilotage interne - version mise à jour le 5 novembre 2026.
 
 ## Règle de lecture
 
@@ -15,10 +15,10 @@ Les compétences 2 à 7 doivent obligatoirement être démontrées par le projet
 | N° | Compétence officielle | Mise en œuvre | Preuve RNCP | Priorité |
 |---:|---|---|---|---|
 | 1 | Installer et configurer son environnement de travail | Couvert | Partiellement documentée | Moyenne |
-| 2 | Maquetter des interfaces utilisateur web ou web mobile | À confirmer | À produire | Haute |
+| 2 | Maquetter des interfaces utilisateur web ou web mobile | Couvert par reconstitution | Maquettes et parcours produits | Faible |
 | 3 | Réaliser des interfaces utilisateur statiques web ou web mobile | Couvert | À sélectionner | Haute |
 | 4 | Développer la partie dynamique des interfaces utilisateur web ou web mobile | Couvert | À sélectionner | Haute |
-| 5 | Mettre en place une base de données relationnelle | Couvert | Diagrammes à refaire | Haute |
+| 5 | Mettre en place une base de données relationnelle | Couvert | MCD et MLD vérifiés | Faible |
 | 6 | Développer des composants d'accès aux données SQL et NoSQL | Couvert | À sélectionner | Haute |
 | 7 | Développer des composants métier côté serveur | Couvert | À sélectionner | Haute |
 | 8 | Documenter le déploiement d'une application dynamique web ou web mobile | Partiel | À produire | Moyenne |
@@ -54,22 +54,24 @@ Il n'est pas nécessaire d'ajouter Docker ou une chaîne CI/CD pour démontrer c
 
 - interfaces finales desktop et responsive ;
 - parcours fonctionnel entre accueil, inscription, connexion, jeux et classement ;
-- anciennes documentations de conception et user stories.
+- anciennes documentations de conception et user stories ;
+- maquettes filaires desktop et mobile du catalogue ;
+- schéma du parcours utilisateur ;
+- captures du résultat réellement exécuté sur téléphone.
 
 ### État
 
-**À confirmer.** Aucune maquette source clairement identifiable n'a été trouvée dans le dépôt actuel.
+**Couvert par une reconstitution documentée.** Aucune maquette source ancienne n'a été retrouvée. Les maquettes ont donc été reconstituées à partir de l'application finale et sont explicitement présentées comme telles.
 
 ### Minimum restant
 
-- rechercher les maquettes réalisées au début du projet dans Canva, Figma, les anciens chats ou les fichiers personnels ;
-- retenir une ou deux interfaces représentatives ;
-- montrer au minimum une adaptation desktop et mobile ;
-- produire un schéma simple de l'enchaînement des écrans.
+- conserver les fichiers source SVG avec le dossier ;
+- exporter les maquettes dans le format demandé pour le dossier final si nécessaire ;
+- rapprocher dans le dossier chaque maquette de la capture correspondante.
 
 ### Justification
 
-Une capture du site terminé ne remplace pas complètement une maquette. Il faut démontrer une étape de conception antérieure ou, à défaut, reconstituer honnêtement un document de conception correspondant à l'application finale, sans prétendre qu'il s'agit d'un original ancien.
+Une capture du site terminé ne remplace pas une maquette. La reconstitution formalise les choix d'organisation et de responsive, tandis que les captures prouvent séparément le résultat. Cette distinction doit être conservée dans le dossier et à l'oral.
 
 ## 3. Réaliser des interfaces utilisateur statiques
 
@@ -136,18 +138,17 @@ Space Runner constitue une preuve forte de JavaScript dynamique, mais le flux sc
 
 ### État
 
-**Compétence couverte, preuves actuelles incohérentes.**
+**Compétence couverte, MCD et MLD mis à jour.**
 
 ### Point de vigilance
 
-Le fichier existant `docs/diagrams/er_diagram.mmd` décrit encore une table `PLAYER_PROFILE` et des identifiants numériques. Ce schéma ne correspond plus aux modèles finaux et ne doit pas être remis au jury en l'état.
+L'ancien fichier `docs/diagrams/er_diagram.mmd` décrivait une table `PLAYER_PROFILE` et des identifiants numériques. Il a été corrigé pour correspondre aux modèles finaux. Les preuves RNCP distinguent maintenant le MCD conceptuel du MLD relationnel.
 
 ### Minimum restant
 
-- produire un MCD correspondant exactement aux trois modèles actuels ;
-- produire un MLD ou schéma relationnel avec types, clés et cardinalités ;
-- fournir un schéma physique ou script SQL représentatif ;
-- vérifier tous les noms avec les modèles SQLAlchemy avant validation.
+- exporter les diagrammes dans un format adapté au dossier final ;
+- ajouter, si nécessaire dans le dossier, un extrait du schéma SQLite généré ;
+- présenter oralement la différence entre règle métier et contrainte SQL pour le meilleur score.
 
 ### Justification
 
@@ -235,12 +236,12 @@ Une documentation honnête et reproductible est suffisante. Il n'est pas nécess
 
 ## Conclusion de la matrice
 
-Le projet couvre techniquement les compétences 1 et 3 à 7. La compétence 2 dépend de la récupération ou de la production transparente des maquettes. La compétence 8 nécessite une documentation ciblée, pas une refonte du projet.
+Le projet couvre techniquement les compétences 1 à 7. Pour la compétence 2, les maquettes sont des reconstitutions transparentes et non des documents historiques. La compétence 8 nécessite encore une documentation ciblée, pas une refonte du projet.
 
 Avant de rédiger le dossier, les trois preuves prioritaires sont donc :
 
-1. les maquettes et le parcours des écrans ;
-2. le MCD/MLD conforme aux modèles finaux ;
-3. la procédure de déploiement minimale et vérifiée.
+1. la procédure de déploiement minimale et vérifiée ;
+2. la sélection des extraits de code et des captures pour le dossier ;
+3. l'export des diagrammes et preuves dans leur format final.
 
 La liste détaillée des captures sera établie seulement après validation de cette matrice.
